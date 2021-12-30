@@ -1,5 +1,6 @@
 package com.example.simpletodo
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +10,14 @@ import androidx.recyclerview.widget.RecyclerView
 // Bridge that tells recyclerView how to display data we give it (list of strings)
 // renders list of strings item by item
 
-class TaskItemAdapter(val listOfItems: List<String>) : RecyclerView.Adapter<TaskItemAdapter.ViewHolder>(){
+class TaskItemAdapter(val listOfItems: List<String>,
+                      val longClickListener: OnLongClickListener) :
+    RecyclerView.Adapter<TaskItemAdapter.ViewHolder>(){
+
+    // implemented in MainActivity
+    interface OnLongClickListener {
+        fun onItemLongClicked(position: Int)
+    }
 
     // ... constructor and member variables
     // Usually involves inflating a layout from XML and returning the holder
@@ -38,6 +46,8 @@ class TaskItemAdapter(val listOfItems: List<String>) : RecyclerView.Adapter<Task
 
     // Provide a direct reference to each of the views within a data item (Ex: all text fields/buttons within an item)
     // Used to cache the views within the item layout for fast access
+
+    // also where we can set a longClick listener
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         // Store references to elements in our layout view
         // since our layout of each list item only has a single text field, only one text reference needed
@@ -46,6 +56,12 @@ class TaskItemAdapter(val listOfItems: List<String>) : RecyclerView.Adapter<Task
 
         init {
             textView = itemView.findViewById(android.R.id.text1)
+
+            // pass in a defined OnLongClickListener so we can control it from the main activity
+            itemView.setOnLongClickListener {
+                longClickListener.onItemLongClicked(adapterPosition)
+                true
+            }
         }
     }
 }
