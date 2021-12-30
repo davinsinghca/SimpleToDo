@@ -1,16 +1,24 @@
 package com.example.simpletodo
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import org.apache.commons.io.FileUtils
+import java.io.File
+import java.io.IOException
+import java.nio.charset.Charset
+
+private const val REQUEST_EDIT = 20
 
 class MainActivity : AppCompatActivity() {
 
-    val listOfTasks = mutableListOf<String>()
+    var listOfTasks = mutableListOf<String>()
 
     lateinit var adapter : TaskItemAdapter
 
@@ -26,25 +34,18 @@ class MainActivity : AppCompatActivity() {
                 // 2. notify adapter that our data set has changed
                 adapter.notifyDataSetChanged()
 
+                saveItems()
             }
         }
 
-        // Detect when user clicks the add button
-//        findViewById<Button>(R.id.button).setOnClickListener {
-//            // executed when user clicks button
-//            Log.i("Caren", "User clicked on button")
-//        }
-
-        listOfTasks.add("Do laundry")
-        listOfTasks.add("Go for a walk")
-
+        loadItems()
 
         // Lookup the recyclerview in activity layout
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
 
         // Initialize contacts
         // Create adapter passing in the sample user data
-        adapter = TaskItemAdapter(listOfTasks, onLongClickListener)
+        adapter = TaskItemAdapter(listOfTasks, onLongClickListener, ::clickListener)
 
         // Attach the adapter to the recyclerview to populate items
         recyclerView.adapter = adapter
@@ -57,18 +58,79 @@ class MainActivity : AppCompatActivity() {
         // Set up button/input field so user can input a task and add to list
         // get a reference to the button, then setOnClickListener
         findViewById<Button>(R.id.button).setOnClickListener {
-            // 1. graph inputted text that is in @+id/addTaskField (just .text is an "Editable" object)
-            val userInputtedTask = inputTextField.text.toString()
+            val userText: String = inputTextField.text.toString()
 
-            // 2. add string to list of tasks
-            listOfTasks.add(userInputtedTask)
+            if (userText != "") {
+                // 1. graph inputted text that is in @+id/addTaskField (just .text is an "Editable" object)
+                val userInputtedTask = userText
+
+                // 2. add string to list of tasks
+                listOfTasks.add(userInputtedTask)
+
+                // 2.5. notify adapter
+                adapter.notifyItemInserted(listOfTasks.size - 1)
+
+                // 3. clear input text field
+                inputTextField.setText("")
+
+                saveItems()
+            }
+        }
+    }
+
+    // Edit an item
+
+    // FirstActivity, launching an activity for a result
+    fun clickListener(position: Int) {
+        val i = Intent(this@MainActivity, EditItemActivity::class.java)
+        i.putExtra("currentText", listOfTasks.get(position)) // pass the current text to the new activity window
+        i.putExtra("index", position)
+        startActivityForResult(i, REQUEST_EDIT)
+    }
+
+    // ActivityOne.kt, time to handle the result of the sub-activity
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        // REQUEST_EDIT is defined above
+        if (resultCode == RESULT_OK && requestCode == REQUEST_EDIT) {
+            // Extract name value from result extras
+            val newText = data!!.getExtras()!!.getString("newText")
+            val position = data.getExtras()!!.getInt("index")
+
+            // Edit the text of the item
+            listOfTasks.set(position, newText!!)
 
             // 2.5. notify adapter
-            adapter.notifyItemInserted(listOfTasks.size - 1)
+            adapter.notifyItemChanged(position)
 
-            // 3. clear input text field
-            inputTextField.setText("")
+            saveItems()
         }
+    }
 
+    // Save the data that the user has inputted
+    // By writing and reading from a file
+
+    // Create a method to get the file we need
+    fun getDataFile() : File {
+        // Every line is going to represent a task in our list of tasks
+        return File(filesDir, "data.txt")
+    }
+
+    // Load the items by reading every line in the data file
+    fun loadItems() {
+        try {
+            listOfTasks = FileUtils.readLines(getDataFile(), Charset.defaultCharset())
+        } catch (ioException: IOException) {
+            ioException.printStackTrace()
+        }
+    }
+
+    // Save items by writing them into the file
+    fun saveItems() {
+        try {
+            FileUtils.writeLines(getDataFile(), listOfTasks)
+        } catch (ioException: IOException) {
+            ioException.printStackTrace()
+        }
     }
 }

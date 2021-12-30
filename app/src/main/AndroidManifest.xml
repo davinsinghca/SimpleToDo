@@ -10,6 +10,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SimpleToDo">
         <activity
+            android:name=".EditItemActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.DayNight.Dialog.MinWidth"
+            android:label="Edit Task"/>
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

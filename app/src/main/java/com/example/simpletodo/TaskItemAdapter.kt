@@ -11,7 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 // renders list of strings item by item
 
 class TaskItemAdapter(val listOfItems: List<String>,
-                      val longClickListener: OnLongClickListener) :
+                      val longClickListener: OnLongClickListener,
+                      val clickListener : (position: Int) -> Unit):
     RecyclerView.Adapter<TaskItemAdapter.ViewHolder>(){
 
     // implemented in MainActivity
@@ -61,6 +62,10 @@ class TaskItemAdapter(val listOfItems: List<String>,
             itemView.setOnLongClickListener {
                 longClickListener.onItemLongClicked(adapterPosition)
                 true
+            }
+
+            itemView.setOnClickListener {
+                clickListener(adapterPosition)
             }
         }
     }
