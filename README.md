@@ -4,7 +4,7 @@
 
 Submitted by: **Davin Singh**
 
-Time spent: **4** hours spent in total
+Time spent: **3.5** hours spent in total
 
 ## User Stories
 
@@ -21,6 +21,7 @@ The following **optional** features are implemented:
 The following **additional** features are implemented:
 
 * [x] Doesn't add the item if the EditText field is the empty string
+* [x] Add an "OK" and "Cancel" button to the edit screen
 
 ## Video Walkthrough
 
